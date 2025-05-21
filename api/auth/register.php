@@ -1,12 +1,17 @@
 <?php
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $companyId = $_POST['company_id']; // např. "alza", "firma.dev"
+    $companyId = $_POST['company_id'];
     $adminLogin = $_POST['admin_login'];
     $adminPassword = $_POST['admin_password'];
 
     if (!preg_match('/^[a-z0-9_.]+$/i', $companyId)) {
         exit("Unauthorised characters in the company id");
     }
+
+    if (!preg_match('/^[a-zA-Z0-9._-]{3,32}$/', $adminLogin)) {
+        exit("Invalid administrator login.");
+    }
+
 
     $dbName = strtolower($companyId) . '_dbx';
     $dsn = "mysql:host=localhost;charset=utf8mb4";
