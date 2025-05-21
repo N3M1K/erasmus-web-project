@@ -3,6 +3,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $companyId = $_POST['company_id'];
     $adminLogin = $_POST['admin_login'];
     $adminPassword = $_POST['admin_password'];
+    $adminEmail = $_POST['admin_email'];
 
     if (!preg_match('/^[a-z0-9_.]+$/i', $companyId)) {
         exit("Unauthorised characters in the company id");
