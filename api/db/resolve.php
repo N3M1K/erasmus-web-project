@@ -1,6 +1,6 @@
 <?php
 function resolveDb(string $companyIdentifier): PDO {
-    if (!preg_match('/^[a-z0-9_]+$/i', $companyIdentifier)) {
+    if (!preg_match('/^[a-z0-9_.]+$/i', $companyIdentifier)) {
         throw new Exception("Unknown company");
     }
 
