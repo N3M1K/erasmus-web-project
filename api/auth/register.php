@@ -1,15 +1,19 @@
 <?php
+require_once('../utils/tsid.php');
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $companyId = $_POST['company_id'];
-    $adminLogin = $_POST['admin_login'];
-    $adminPassword = $_POST['admin_password'];
-    $adminEmail = $_POST['admin_email'];
+    $username = $_POST['username'];
+    $password = $_POST['password'];
+    $email = $_POST['email'];
+    $firstname = $_POST['firstname'];
+    $surname = $_POST['surname'];
 
     if (!preg_match('/^[a-z0-9_.]+$/i', $companyId)) {
         exit("Unauthorised characters in the company id");
     }
 
-    if (!preg_match('/^[a-zA-Z0-9._-]{3,32}$/', $adminLogin)) {
+    if (!preg_match('/^[a-zA-Z0-9._-]{3,32}$/', $username)) {
         exit("Invalid administrator login.");
     }
 
@@ -39,17 +43,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // 3. Vytvoření základních tabulek
         $pdo->exec("
             CREATE TABLE IF NOT EXISTS users (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                login VARCHAR(50) UNIQUE,
-                password_hash VARCHAR(255),
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
+                id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                tsid VARCHAR(255),
+                username VARCHAR(255),
+                firstname VARCHAR(255),
+                lastname VARCHAR(255),
+                email VARCHAR(255),
+                password VARCHAR(255),
+                terms TINYINT(1),
+                active TINYINT(1),
+                locked TINYINT(1),
+                photo_path VARCHAR(255),
+                logged_date DATETIME(6),
+                last_login DATETIME(6),
+                login_failed_attempts SMALLINT,
+                enabled TINYINT(1),
+                created_date DATETIME(6),
+                created_by BIGINT,
+                updated_date DATETIME(6),
+                updated_by BIGINT
+            ) ENGINE=InnoDB;
         ");
 
+
         // 4. Uložení admina
-        $hash = password_hash($adminPassword, PASSWORD_DEFAULT);
-        $stmt = $pdo->prepare("INSERT INTO users (login, password_hash) VALUES (?, ?)");
-        $stmt->execute([$adminLogin, $hash]);
+        $tsid = generateTsid();
+        $hash = password_hash($password, PASSWORD_DEFAULT);
+        $stmt = $pdo->prepare("
+            INSERT INTO users (
+                tsid, username, password, email, firstname, lastname, created_date, active, enabled, terms
+            ) VALUES (?, ?, ?, ?, ?, ?, NOW(), 1, 1, 1)
+        ");
+        $stmt->execute([$tsid, $username, $hash, $email, $firstname, $surname]);
 
         echo "Company '$companyId' succesfully registrated.";
     } catch (PDOException $e) {
