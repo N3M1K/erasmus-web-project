@@ -9,7 +9,13 @@ $username = $_POST['login'] ?? '';
 $password = $_POST['password'] ?? '';
 
 try {
-    $pdo = resolveDb($company);
+    try {
+        $pdo = resolveDb($company);
+
+    } catch (Exception $e) {
+        http_response_code(401);
+        exit("Company does not exist");
+    }
 
     $stmt = $pdo->prepare("SELECT tsid, password FROM users WHERE username = ?");
     $stmt->execute([$username]);
@@ -47,10 +53,12 @@ try {
             'samesite' => 'Strict',
         ]);
 
-        header("Location: ../../../erasmus_web_project-panel/dashboard.php");
-        exit;
+        http_response_code(200);
+        exit("ok");
+
+        //header("Location: ../../../erasmus_web_project-panel/dashboard.php");
         } else {
-        // Neúspěšné přihlášení
+        // ! Neúspěšné přihlášení
         $tries = isset($_COOKIE['login_tries']) ? (int)$_COOKIE['login_tries'] + 1 : 1;
 
         setcookie("login_tries", $tries, [

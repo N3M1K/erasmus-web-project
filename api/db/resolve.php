@@ -1,8 +1,5 @@
 <?php
 function resolveDb(string $companyIdentifier): PDO {
-    if (!preg_match('/^[a-z0-9_.]+$/i', $companyIdentifier)) {
-        throw new Exception("Unknown company");
-    }
 
     $dbName = strtolower($companyIdentifier) . '_dbx';
 
@@ -13,6 +10,6 @@ function resolveDb(string $companyIdentifier): PDO {
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         ]);
     } catch (PDOException $e) {
-        throw new Exception("Unknown company");
+        throw new Exception("Unknown company, cID:");
     }
 }

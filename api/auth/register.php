@@ -61,7 +61,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 created_date DATETIME(6),
                 created_by BIGINT,
                 updated_date DATETIME(6),
-                updated_by BIGINT
+                updated_by BIGINT,
+                token VARCHAR(255) DEFAULT NULL
             ) ENGINE=InnoDB;
         ");
 
