@@ -16,6 +16,7 @@ try {
         http_response_code(401);
         exit("Company does not exist");
     }
+   
 
     $stmt = $pdo->prepare("SELECT tsid, password FROM users WHERE username = ?");
     $stmt->execute([$username]);
@@ -46,7 +47,7 @@ try {
             'samesite' => 'Strict',
         ]);
         setcookie("cmp", $company, [
-            'expires' => time() + 3600,
+            'expires' => time() + 31556952,
             'path' => '/',
             'secure' => false,
             'httponly' => false,

@@ -9,6 +9,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $firstname = $_POST['firstname'];
     $surname = $_POST['surname'];
 
+    $apiKey = "4e37dfe2a67f32ab8548997b24123870";
+
+    if (isset($_FILES['profile_picture']) && $_FILES['profile_picture']['error'] === UPLOAD_ERR_OK) {
+        // Read and base64-encode the uploaded image
+        $imageTmpPath = $_FILES['profile_picture']['tmp_name'];
+        $base64Image = base64_encode(file_get_contents($imageTmpPath));
+
+        // Prepare POST data
+        $data = [
+            'key' => $apiKey,
+            'image' => $base64Image,
+        ];
+
+        // Send request to imgbb
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, 'https://api.imgbb.com/1/upload');
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        // Parse response
+        $result = json_decode($response, true);
+
+        if (isset($result['data']['thumb']['url'])) {
+            $thumbnailUrl = $result['data']['thumb']['url'];
+        } else {
+            echo "Upload failed: " . ($result['error']['message'] ?? 'Unknown error');
+        }
+    } else {
+        echo "No image uploaded or upload error.";
+    }
+
     if (!preg_match('/^[a-z0-9_.]+$/i', $companyId)) {
         exit("Unauthorised characters in the company id");
     }
@@ -65,6 +100,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 token VARCHAR(255) DEFAULT NULL
             ) ENGINE=InnoDB;
         ");
+        $pdo->exec(
+            "CREATE TABLE IF NOT EXISTS plots (
+                id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                name VARCHAR(100),
+                area VARCHAR(255),
+                gps_lat FLOAT,
+                gps_lon FLOAT,
+                enabled BOOLEAN DEFAULT TRUE,
+                created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                created_by VARCHAR(255),
+                updated_date TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+                updated_by BIGINT UNSIGNED
+            ) ENGINE=InnoDB;"
+        );
+
+        $pdo->exec(
+            "CREATE TABLE IF NOT EXISTS consultants (
+                id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                username VARCHAR(255)
+            ) ENGINE=InnoDB;"
+        );
+        $pdo->exec(
+            "CREATE TABLE IF NOT EXISTS chats (
+                id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                sender VARCHAR(255),
+                receiver VARCHAR(255),
+                data TEXT,
+                time DATETIME,
+                seen BOOLEAN DEFAULT FALSE
+            ) ENGINE=InnoDB;"
+        );
+
 
 
         // 4. Uložení admina
@@ -72,12 +139,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $hash = password_hash($password, PASSWORD_DEFAULT);
         $stmt = $pdo->prepare("
             INSERT INTO users (
-                tsid, username, password, email, firstname, lastname, created_date, active, enabled, terms
-            ) VALUES (?, ?, ?, ?, ?, ?, NOW(), 1, 1, 1)
+                tsid, username, password, email, firstname, lastname, created_date, active, enabled, terms, photo_path
+            ) VALUES (?, ?, ?, ?, ?, ?, NOW(), 1, 1, 1, ?)
         ");
-        $stmt->execute([$tsid, $username, $hash, $email, $firstname, $surname]);
+        $stmt->execute([$tsid, $username, $hash, $email, $firstname, $surname, $thumbnailUrl]);
 
-        echo "Company '$companyId' succesfully registrated.";
+        header("Location: ../../../erasmus_web_project-panel");
     } catch (PDOException $e) {
         exit("Error: " . $e->getMessage());
     }

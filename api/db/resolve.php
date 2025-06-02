@@ -10,6 +10,6 @@ function resolveDb(string $companyIdentifier): PDO {
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         ]);
     } catch (PDOException $e) {
-        throw new Exception("Unknown company, cID:");
+        throw new Exception("Unknown company, cID:" . $dbName);
     }
 }
