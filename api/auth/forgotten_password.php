@@ -56,9 +56,9 @@ try {
     $mail->Host       = 'smtp.forpsi.com';
     $mail->SMTPAuth   = true;
     $mail->Username   = 'contact@xxdev.cz';
-    $mail->Password   = 'nE4pQ4Ts@K'; //!!!!!!!!!!! .env !!!!!!!!!!!!
+    $mail->Password   = ''; //!!!!!!!!!!! .env !!!!!!!!!!!!
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-    $mail->Port       = 587;
+    $mail->Port       = ;
 
     $mail->setFrom('contact@xxdev.cz', 'xxdev.cz');
     $mail->addAddress($email, $user);
